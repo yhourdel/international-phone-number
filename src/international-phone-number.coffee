@@ -2,7 +2,7 @@
 # https://github.com/mareczek/international-phone-number
 
 "use strict"
-angular.module("internationalPhoneNumber", []).directive 'internationalPhoneNumber', () ->
+angular.module("internationalPhoneNumber", []).directive 'internationalPhoneNumber', ($timeout) ->
 
   restrict:   'A'
   require: '^ngModel'
@@ -42,7 +42,9 @@ angular.module("internationalPhoneNumber", []).directive 'internationalPhoneNumb
         else
           options[key] = option
 
-    element.intlTelInput(options)
+    $timeout ->
+      element.intlTelInput(options)
+    , 500
 
     unless options.utilsScript
       element.intlTelInput('loadUtils', 'bower_components/intl-tel-input/lib/libphonenumber/build/utils.js')
