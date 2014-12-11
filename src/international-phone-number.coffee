@@ -29,6 +29,7 @@ angular.module("internationalPhoneNumber", []).directive 'internationalPhoneNumb
       preferredCountries: ['us', 'gb']
       responsiveDropdown: false
       utilsScript:        ""
+      keepModelClean:     false
 
     angular.forEach options, (value, key) ->
       option = eval("attrs.#{key}")
@@ -36,22 +37,30 @@ angular.module("internationalPhoneNumber", []).directive 'internationalPhoneNumb
         if key == 'preferredCountries'
           options.preferredCountries = handleWhatsSupposedToBeAnArray option
         else if key == 'onlyCountries'
-            options.onlyCountries = handleWhatsSupposedToBeAnArray option
+          options.onlyCountries = handleWhatsSupposedToBeAnArray option
         else if typeof(value) == "boolean"
           options[key] = (option == "true")
         else
           options[key] = option
 
+    # timeout so that the angular content has time to execute
     $timeout ->
       element.intlTelInput(options)
-    , 500
+      if options.nationalMode
+        selectedCountryData = element.intlTelInput('getSelectedCountryData')
+        return true unless selectedCountryData
+        newNumber = element.val().replace new RegExp("\\+#{selectedCountryData.dialCode}"), 0
+        element.intlTelInput 'setNumber', newNumber
 
     unless options.utilsScript
       element.intlTelInput('loadUtils', 'bower_components/intl-tel-input/lib/libphonenumber/build/utils.js')
 
     ctrl.$parsers.push (value) ->
       return value if !value
-      value.replace(/[^\d]/g, '')
+      if options.keepModelClean
+        element.intlTelInput('getCleanNumber')
+      else
+        value.replace(/[^\d]/g, '')
 
     ctrl.$parsers.push (value) ->
       if value
